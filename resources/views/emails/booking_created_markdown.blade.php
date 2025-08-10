@@ -1,6 +1,6 @@
 @component('mail::message')
 <div style="text-align: center; margin-bottom: 16px;">
-    <img src="{{ config('app.brand_logo', 'https://via.placeholder.com/180x50?text=Pearl+Events') }}" alt="Pearl Events" style="max-width: 200px;">
+    <img src="{{ config('app.brand_logo', 'https://pearlsevents.vercel.app/logo.png') }}" alt="Pearl Events" style="max-width: 200px;">
 </div>
 
 # Bonjour {{ $user->name }},

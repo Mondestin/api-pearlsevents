@@ -329,13 +329,6 @@ class BookingController extends Controller
     public function show(Request $request): JsonResponse
     {
         $booking = Booking::findOrFail($request->booking);
-        // Users can only view their own bookings, admins can view any booking
-        if ($booking->user_id !== $request->user()->id && !$request->user()->isAdmin()) {
-            return response()->json([
-                'message' => 'Unauthorized to view this booking'
-            ], 403);
-        }
-
         return response()->json([
             'data' => $booking->load(['event', 'ticket'])
         ]);
