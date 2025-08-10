@@ -61,6 +61,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bookings/statistics', [BookingController::class, 'statistics']);
 });
 
+Route::get('/booking/{bookingId}', [BookingController::class, 'eventBookings']);
+
 // Health check
 Route::get('/health', function () {
     return response()->json([

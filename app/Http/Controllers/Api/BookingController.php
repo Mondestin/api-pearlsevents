@@ -359,21 +359,21 @@ class BookingController extends Controller
      */
     public function eventBookings(Request $request): JsonResponse
     {
-        $event = Event::findOrFail($request->event);
-        // Only admins can view all bookings for an event
-        if (!$request->user()->isAdmin()) {
-            return response()->json([
-                'message' => 'Only admins can view event bookings'
-            ], 403);
+        $booking = Booking::find($request->bookingId);
+         if (!$booking) {
+                return response()->json([
+                    'message' => "Booking not found",
+                    'id' => $request->bookingId,
+                ], 404);
         }
 
-        $bookings = $event->bookings()
-            ->with(['user', 'ticket'])
-            ->get();
+        // Load event and ticket details
+        $booking->load(['event', 'ticket']);
 
-        return response()->json([
-            'data' => $bookings
-        ]);
+        // Return booking details
+       return response()->json([
+            'data' => $booking
+        ], 200);
     }
 
     /**
