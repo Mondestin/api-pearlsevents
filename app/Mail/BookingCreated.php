@@ -38,7 +38,7 @@ class BookingCreated extends Mailable
         // Build a friendly booking URL that the QR code points to (opens booking online when scanned)
         // Prefer a configurable frontend URL, fall back to app.url
         $baseUrl = rtrim((string) $this->frontendUrl, '/');
-        $bookingUrl = $baseUrl . '/bookings/' . $this->booking->id; // Adjust path to your frontend route
+        $bookingUrl = $baseUrl . '/booking/' . $this->booking->id; // Adjust path to your frontend route
 
         // Build a lightweight QR code using a public QR service URL to avoid heavy dependencies
         // NOTE: If you prefer generating QR codes locally, we can swap this to a library like "simplesoftwareio/simple-qrcode"
