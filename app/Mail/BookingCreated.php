@@ -17,6 +17,7 @@ class BookingCreated extends Mailable
      * @var Booking
      */
     public Booking $booking;
+    public string $frontendUrl;
 
     /**
      * Create a new message instance.
@@ -25,6 +26,7 @@ class BookingCreated extends Mailable
     {
         // Keep the booking with necessary relations for the email
         $this->booking = $booking;
+        $this->frontendUrl = env('FRONTEND_URL','https://admin.pearlsevents.vercel.app');
     }
 
     /**
@@ -35,7 +37,7 @@ class BookingCreated extends Mailable
         // Set a clear French subject and use a dedicated view for the email content
         // Build a friendly booking URL that the QR code points to (opens booking online when scanned)
         // Prefer a configurable frontend URL, fall back to app.url
-        $baseUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
+        $baseUrl = rtrim((string) $this->frontendUrl, '/');
         $bookingUrl = $baseUrl . '/bookings/' . $this->booking->id; // Adjust path to your frontend route
 
         // Build a lightweight QR code using a public QR service URL to avoid heavy dependencies

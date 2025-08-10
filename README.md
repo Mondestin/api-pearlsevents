@@ -1,4 +1,4 @@
-# Pearl Events API
+# Pearl's Event API
 
 A modern RESTful API for event management and ticket booking built with Laravel 12.
 
@@ -27,7 +27,7 @@ A modern RESTful API for event management and ticket booking built with Laravel 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd pearleventsApi
+   cd pearlseventsApi
    ```
 
 2. **Install dependencies**

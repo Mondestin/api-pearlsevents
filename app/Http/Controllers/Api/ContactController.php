@@ -18,39 +18,42 @@ class ContactController extends Controller
     {
         // Validate inputs from the public contact form
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|min:2|max:255',
             'email' => 'required|email',
-            'subject' => 'required|string|max:255',
-            'message' => 'required|string|max:5000',
+            'phone' => 'required|string|min:10|regex:/^[\d\s\-\+\(\)]+$/',
+            'eventType' => 'required|string|min:1|max:255',
+            'eventDate' => 'nullable|string|max:255',
+            'budget' => 'nullable|string|max:255',
+            'message' => 'required|string|min:10|max:5000',
         ]);
 
         // Resolve admin email from config or env, fallback to MAIL_FROM_ADDRESS
-        $adminEmail = 'sydneymondestin@gmail.com';
-        // $adminEmail = config('mail.contact_to')
-        //     ?? env('MAIL_CONTACT_TO')
-        //     ?? config('mail.from.address');
+        $adminEmail =  env('MAIL_CONTACT_TO');
 
         try {
             Mail::to($adminEmail)->send(new ContactUsMail(
                 $validated['name'],
                 $validated['email'],
-                $validated['subject'],
+                $validated['phone'],
+                $validated['eventType'],
+                $validated['eventDate'],
+                $validated['budget'],
                 $validated['message']
             ));
 
-            Log::info('Contact message sent to admin', [
+            Log::info('Contact message sent to admin from Pearl\'s Event', [
                 'from_email' => $validated['email'],
-                'subject' => $validated['subject'],
+                'event_type' => $validated['eventType'],
                 'admin_email' => $adminEmail,
             ]);
 
             return response()->json([
-                'message' => 'Votre message a été envoyé. Merci de nous avoir contactés.'
+                'message' => 'Votre message a été envoyé. Merci de nous avoir contactés pour votre événement.'
             ], 200);
         } catch (\Throwable $e) {
-            Log::error('Failed to send contact message to admin', [
+            Log::error('Failed to send contact message to admin from Pearl\'s Event', [
                 'from_email' => $validated['email'],
-                'subject' => $validated['subject'],
+                'event_type' => $validated['eventType'],
                 'admin_email' => $adminEmail,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),

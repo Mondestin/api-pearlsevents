@@ -12,27 +12,43 @@ class ContactUsMail extends Mailable
 
     public string $name;
     public string $email;
-    public string $subjectLine;
-    public string $messageBody;
+    public string $phone;
+    public string $eventType;
+    public ?string $eventDate;
+    public ?string $budget;
+    public string $message;
 
-    public function __construct(string $name, string $email, string $subjectLine, string $messageBody)
-    {
+    public function __construct(
+        string $name, 
+        string $email, 
+        string $phone, 
+        string $eventType, 
+        ?string $eventDate = null, 
+        ?string $budget = null, 
+        string $message
+    ) {
         $this->name = $name;
         $this->email = $email;
-        $this->subjectLine = $subjectLine;
-        $this->messageBody = $messageBody;
+        $this->phone = $phone;
+        $this->eventType = $eventType;
+        $this->eventDate = $eventDate;
+        $this->budget = $budget;
+        $this->message = $message;
     }
 
     public function build(): self
     {
-        return $this->subject('[Contact] ' . $this->subjectLine)
+        return $this->subject('[Pearl\'s Event] Nouveau message de contact - ' . $this->eventType)
             ->replyTo($this->email, $this->name)
             ->markdown('emails.contact_us')
             ->with([
                 'name' => $this->name,
                 'email' => $this->email,
-                'subjectLine' => $this->subjectLine,
-                'messageBody' => $this->messageBody,
+                'phone' => $this->phone,
+                'eventType' => $this->eventType,
+                'eventDate' => $this->eventDate,
+                'budget' => $this->budget,
+                'message' => $this->message,
             ]);
     }
 }

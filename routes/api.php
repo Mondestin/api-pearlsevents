@@ -65,7 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/health', function () {
     return response()->json([
         'status' => 'ok',
-        'message' => 'Pearl Events API is running',
+        'message' => 'Pearl\'s Event API is running',
         'timestamp' => now()
     ]);
 }); 
