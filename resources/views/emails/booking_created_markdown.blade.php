@@ -55,6 +55,6 @@ Voir ma réservation en ligne
 Pour toute question, répondez directement à cet e-mail. Nous sommes là pour vous aider.
 
 Merci,
-**Pearl Events**
+**Pearl's Events**
 @endcomponent
 

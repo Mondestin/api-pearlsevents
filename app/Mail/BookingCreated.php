@@ -26,7 +26,7 @@ class BookingCreated extends Mailable
     {
         // Keep the booking with necessary relations for the email
         $this->booking = $booking;
-        $this->frontendUrl = env('FRONTEND_URL','https://admin.pearlsevents.vercel.app');
+        $this->frontendUrl = env('FRONTEND_URL','https://admin-pearlsevents.vercel.app');
     }
 
     /**

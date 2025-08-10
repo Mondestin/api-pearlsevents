@@ -1,4 +1,4 @@
-<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#0f172a;color:#fff">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#ba994a;color:#fff">
   <tr>
     <td align="center" style="padding:16px">
       <table width="600" cellpadding="0" cellspacing="0" role="presentation">
