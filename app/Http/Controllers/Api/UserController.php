@@ -68,10 +68,13 @@ class UserController extends Controller
                 'role' => 'sometimes|in:admin,client',
             ]);
 
+            //generate random password
+            $password = Str::random(10);
+
             $userData = [
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make(Str::random(10)),
+                'password' => Hash::make($password),
                 'role' => $request->role ?? 'client', // Default to client if not specified
             ];
 
@@ -79,7 +82,7 @@ class UserController extends Controller
 
             // Send welcome email to the new user
             try {
-                Mail::to($user->email)->send(new UserRegistrationMail($user));
+                Mail::to($user->email)->send(new UserRegistrationMail($user, $password));
                     } catch (\Exception $e) {
                         // Email failed but user creation was successful
                         

@@ -1,5 +1,4 @@
 @component('mail::message')
-# 🎉 Bienvenue sur Pearl's Event !
 
 <div style="text-align: center; margin-bottom: 16px;">
     <img src="{{ config('app.brand_logo', 'https://pearlsevents.vercel.app/logo.png') }}" alt="Pearl Events" style="max-width: 200px;">
@@ -23,7 +22,7 @@ Nous sommes ravis de vous accueillir dans notre communauté d'événements excep
         </tr>
         <tr>
             <td style="padding: 10px 0; font-weight: 600; color: #495057;">Mot de passe :</td>
-            <td style="padding: 10px 0; color: #6c757d;"><code style="background: #e9ecef; padding: 4px 8px; border-radius: 6px;">{{ $user->password }}</code></td>
+            <td style="padding: 10px 0; color: #6c757d;"><code style="background: #e9ecef; padding: 4px 8px; border-radius: 6px;">{{ $password }}</code></td>
         </tr>
         <tr>
             <td style="padding: 10px 0; font-weight: 600; color: #495057;">Date d'inscription :</td>
