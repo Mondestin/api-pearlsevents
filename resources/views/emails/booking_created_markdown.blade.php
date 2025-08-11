@@ -5,7 +5,7 @@
 
 # Bonjour {{ $user->name }},
 
-Merci d'avoir choisi **Pearl Events**. Votre réservation a été confirmée.
+Merci d'avoir choisi **Pearl's Events**. Votre réservation a été confirmée.
 
 @component('mail::panel')
 <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="font-size:14px;">
