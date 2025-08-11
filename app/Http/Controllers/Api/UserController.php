@@ -79,14 +79,10 @@ class UserController extends Controller
             ];
 
             $user = User::create($userData);
-            $userMailInfo = [
-                'name' => $user->name,
-                'email' => $user->email,
-                'password' => $password,
-            ];
+          
             // Send welcome email to the new user
             try {
-                Mail::to($user->email)->send(new UserRegistrationMail($userMailInfo));
+                Mail::to($user->email)->send(new UserRegistrationMail($user, $password));
                     } catch (\Exception $e) {
                         // Email failed but user creation was successful
                         
