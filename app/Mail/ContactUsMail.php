@@ -38,7 +38,7 @@ class ContactUsMail extends Mailable
 
     public function build(): self
     {
-        return $this->subject('[Pearl\'s Event] Nouveau message de contact - ' . $this->eventType)
+        return $this->subject('Nouveau message de contact - ' . $this->eventType)
             ->replyTo($this->email, $this->name)
             ->markdown('emails.contact_us')
             ->with([
