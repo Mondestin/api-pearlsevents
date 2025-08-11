@@ -12,12 +12,11 @@ class UserRegistrationMail extends Mailable
     use Queueable, SerializesModels;
 
     public User $user;
-    public string $welcomeMessage;
+
     
-    public function __construct(User $user, string $welcomeMessage = '')
+    public function __construct(User $user)
     {
         $this->user = $user;
-        $this->welcomeMessage = $welcomeMessage ?: 'Bienvenue dans la communauté Pearl\'s Events !';
         
     }
 
@@ -26,9 +25,7 @@ class UserRegistrationMail extends Mailable
         return $this->subject('Pearl\'s Events - Bienvenue ' . $this->user->name . ' !')
             ->markdown('emails.user_registration')
             ->with([
-                'user' => $this->user,
-                'welcomeMessage' => $this->welcomeMessage
-               
+                'user' => $this->user 
             ]);
     }
 } 

@@ -6,7 +6,7 @@
 
 Bonjour **{{ $user->name }}**,
 
-{{ $welcomeMessage }}
+Bienvenue dans la communauté Pearl's Events !
 
 Nous sommes ravis de vous accueillir dans notre communauté d'événements exceptionnels !
 
