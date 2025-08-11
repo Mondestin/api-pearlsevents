@@ -28,7 +28,7 @@ class ContactController extends Controller
         ]);
 
         // Resolve admin email from config or env, fallback to MAIL_FROM_ADDRESS
-        $adminEmail =  env('MAIL_CONTACT_TO');
+        $adminEmail =  env('MAIL_TO_ADMIN');
 
         try {
             Mail::to($adminEmail)->send(new ContactUsMail(
