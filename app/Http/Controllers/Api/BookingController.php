@@ -536,25 +536,6 @@ class BookingController extends Controller
                 return response()->json([
                     'message' => 'Event booked successfully! Check your email for confirmation.',
                     'data' => [
-                        'booking_id' => $booking->id,
-                        'booking_reference' => 'BK-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT),
-                        'event' => [
-                            'name' => $event->name,
-                            'date' => $event->date,
-                            'location' => $event->location
-                        ],
-                        'ticket' => [
-                            'type' => $ticket->type,
-                            'price' => $ticket->price
-                        ],
-                        'quantity' => $quantity,
-                        'total_price' => $booking->total_price,
-                        'user_info' => [
-                            'name' => $userInfo['name'],
-                            'email' => $userInfo['email'],
-                            'phone' => $userInfo['phone'],
-                            'role' => $userInfo['role'] ?? 'client'
-                        ],
                         'booking_date' => $booking->created_at,
                         'status' => 'confirmed'
                     ]
