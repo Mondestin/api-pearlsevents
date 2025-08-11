@@ -13,12 +13,12 @@ class UserRegistrationMail extends Mailable
 
     public User $user;
     public string $welcomeMessage;
-    public string $password;
-    public function __construct(User $user, string $welcomeMessage = '', string $password = '')
+    
+    public function __construct(User $user, string $welcomeMessage = '')
     {
         $this->user = $user;
         $this->welcomeMessage = $welcomeMessage ?: 'Bienvenue dans la communauté Pearl\'s Events !';
-        $this->password = $password;
+        
     }
 
     public function build(): self
@@ -27,8 +27,8 @@ class UserRegistrationMail extends Mailable
             ->markdown('emails.user_registration')
             ->with([
                 'user' => $this->user,
-                'welcomeMessage' => $this->welcomeMessage,
-                'password' => $this->password,
+                'welcomeMessage' => $this->welcomeMessage
+               
             ]);
     }
 } 
