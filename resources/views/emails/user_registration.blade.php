@@ -19,12 +19,10 @@ Nous sommes ravis de vous accueillir dans notre communauté d'événements excep
         <div style="font-weight: 600; color: #495057; margin-bottom: 5px;">Nom d'utilisateur :</div>
         <div style="color: #6c757d;"><strong>{{ $user->email }}</strong></div>
     </div>
-    
     <div style="margin-bottom: 15px;">
         <div style="font-weight: 600; color: #495057; margin-bottom: 5px;">Mot de passe :</div>
         <div style="color: #6c757d;"><code style="background: #e9ecef; padding: 4px 8px; border-radius: 6px;">{{ $password }}</code></div>
     </div>
-    
     <div style="margin-bottom: 15px;">
         <div style="font-weight: 600; color: #495057; margin-bottom: 5px;">Date d'inscription :</div>
         <div style="color: #6c757d;">{{ $user->created_at->format('d/m/Y à H:i') }}</div>
