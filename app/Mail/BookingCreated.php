@@ -46,7 +46,7 @@ class BookingCreated extends Mailable
         // Public QR code generation URL (PNG 240x240). The data is URL-encoded (points directly to the booking URL).
         $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' . urlencode($bookingUrl);
 
-        return $this->subject('Pearls Events - Confirmation de réservation')
+        return $this->subject('Pearl\'s Events - Confirmation de réservation')
             // Use Markdown template for consistent header/footer and button styling
             ->markdown('emails.booking_created_markdown')
             ->with([

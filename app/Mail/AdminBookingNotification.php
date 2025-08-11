@@ -22,7 +22,7 @@ class AdminBookingNotification extends Mailable
 
     public function build(): self
     {
-        return $this->subject('[Pearl\'s Event] New Online Booking - ' . $this->booking->event->name)
+        return $this->subject('Pearl\'s Event New Online Booking - ' . $this->booking->event->name)
             ->markdown('emails.admin_booking_notification')
             ->with([
                 'booking' => $this->booking,
