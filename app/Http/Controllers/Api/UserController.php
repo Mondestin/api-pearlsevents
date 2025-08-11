@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -54,12 +53,6 @@ class UserController extends Controller
         try {
             // Only admins can create users
             if (!$request->user()->isAdmin()) {
-                Log::warning('Non-admin attempt to create user', [
-                    'requesting_user_id' => $request->user()->id,
-                    'requesting_user_email' => $request->user()->email,
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent()
-                ]);
                 
                 return response()->json([
                     'message' => 'Only admins can create users'
@@ -69,41 +62,31 @@ class UserController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:8',
                 'role' => 'sometimes|in:admin,client',
             ]);
 
             $userData = [
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make($request->password),
+                'password' => Hash::make(Str::random(10)),
                 'role' => $request->role ?? 'client', // Default to client if not specified
             ];
 
             $user = User::create($userData);
 
-            Log::info('User created successfully by admin', [
-                'admin_id' => $request->user()->id,
-                'admin_email' => $request->user()->email,
-                'new_user_id' => $user->id,
-                'new_user_email' => $user->email,
-                'new_user_role' => $user->role,
-                'ip_address' => $request->ip()
-            ]);
+            // Send welcome email to the new user
+            try {
+                Mail::to($user->email)->send(new UserRegistrationMail($user));
+                    } catch (\Exception $e) {
+                        // Email failed but user creation was successful
+                        
+                    }
 
             return response()->json([
                 'message' => 'User created successfully',
                 'data' => $user
             ], 201);
         } catch (\Exception $e) {
-            Log::error('Error creating user', [
-                'admin_id' => $request->user()->id,
-                'admin_email' => $request->user()->email,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->except(['password']),
-                'ip_address' => $request->ip()
-            ]);
             
             return response()->json([
                 'message' => 'Failed to create user'
@@ -149,12 +132,6 @@ class UserController extends Controller
         try {
             // Only admins can view all users
             if (!$request->user()->isAdmin()) {
-                Log::warning('Unauthorized access attempt to list users', [
-                    'user_id' => $request->user()->id,
-                    'user_email' => $request->user()->email,
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent()
-                ]);
                 
                 return response()->json([
                     'message' => 'Only admins can view all users'
@@ -180,27 +157,10 @@ class UserController extends Controller
 
             $users = $query->get();
             
-            Log::info('Users listed successfully', [
-                'admin_id' => $request->user()->id,
-                'admin_email' => $request->user()->email,
-                'total_users' => $users->count(),
-                'filters' => [
-                    'role' => $request->get('role'),
-                    'search' => $request->get('search')
-                ]
-            ]);
-
             return response()->json([
                 'data' => $users
             ]);
         } catch (\Exception $e) {
-            Log::error('Error listing users', [
-                'user_id' => $request->user()->id,
-                'user_email' => $request->user()->email,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'ip_address' => $request->ip()
-            ]);
             
             return response()->json([
                 'message' => 'Failed to list users'
@@ -254,14 +214,6 @@ class UserController extends Controller
         try {
             // Users can only view their own profile, admins can view any user
             if ($user->id !== $request->user()->id && !$request->user()->isAdmin()) {
-                Log::warning('Unauthorized access attempt to view user profile', [
-                    'requesting_user_id' => $request->user()->id,
-                    'requesting_user_email' => $request->user()->email,
-                    'target_user_id' => $user->id,
-                    'target_user_email' => $user->email,
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent()
-                ]);
                 
                 return response()->json([
                     'message' => 'Unauthorized to view this user'
@@ -270,26 +222,10 @@ class UserController extends Controller
 
             $userData = $user->load(['bookings.event', 'events']);
             
-            Log::info('User profile viewed', [
-                'viewer_id' => $request->user()->id,
-                'viewer_email' => $request->user()->email,
-                'target_user_id' => $user->id,
-                'target_user_email' => $user->email,
-                'is_admin_view' => $request->user()->isAdmin()
-            ]);
-
             return response()->json([
                 'data' => $userData
             ]);
         } catch (\Exception $e) {
-            Log::error('Error viewing user profile', [
-                'requesting_user_id' => $request->user()->id,
-                'requesting_user_email' => $request->user()->email,
-                'target_user_id' => $user->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'ip_address' => $request->ip()
-            ]);
             
             return response()->json([
                 'message' => 'Failed to view user profile'
@@ -345,14 +281,6 @@ class UserController extends Controller
         try {       
             // Users can only update their own profile, admins can update any user
             if ($user->id !== $request->user()->id && !$request->user()->isAdmin()) {
-                Log::warning('Unauthorized access attempt to update user profile', [
-                    'requesting_user_id' => $request->user()->id,
-                    'requesting_user_email' => $request->user()->email,
-                    'target_user_id' => $user->id,
-                    'target_user_email' => $user->email,
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent()
-                ]);
                 
                 return response()->json([
                     'message' => 'Unauthorized to update this user'
@@ -367,18 +295,10 @@ class UserController extends Controller
                     'max:255',
                     Rule::unique('users')->ignore($user->id)
                 ],
-                'password' => 'sometimes|string|min:8',
                 'role' => 'sometimes|in:admin,client',
             ]);
 
             if ($validator->fails()) {
-                Log::warning('User profile update validation failed', [
-                    'requesting_user_id' => $request->user()->id,
-                    'target_user_id' => $user->id,
-                    'validation_errors' => $validator->errors()->toArray(),
-                    'request_data' => $request->except(['password']),
-                    'ip_address' => $request->ip()
-                ]);
                 
                 return response()->json([
                     'message' => 'Validation failed',
@@ -388,13 +308,6 @@ class UserController extends Controller
 
             // Only admins can change roles
             if ($request->has('role') && !$request->user()->isAdmin()) {
-                Log::warning('Non-admin attempt to change user role', [
-                    'requesting_user_id' => $request->user()->id,
-                    'requesting_user_email' => $request->user()->email,
-                    'target_user_id' => $user->id,
-                    'requested_role' => $request->role,
-                    'ip_address' => $request->ip()
-                ]);
                 
                 return response()->json([
                     'message' => 'Only admins can change user roles'
@@ -407,52 +320,21 @@ class UserController extends Controller
             // Hash password if provided
             if ($request->has('password')) {
                 $updateData['password'] = Hash::make($request->password);
-                Log::info('User password updated', [
-                    'user_id' => $user->id,
-                    'updated_by' => $request->user()->id,
-                    'ip_address' => $request->ip()
-                ]);
             }
 
             // Only admins can update roles
             if ($request->has('role') && $request->user()->isAdmin()) {
                 $updateData['role'] = $request->role;
-                Log::info('User role changed by admin', [
-                    'target_user_id' => $user->id,
-                    'target_user_email' => $user->email,
-                    'old_role' => $user->role,
-                    'new_role' => $request->role,
-                    'admin_id' => $request->user()->id,
-                    'admin_email' => $request->user()->email,
-                    'ip_address' => $request->ip()
-                ]);
             }
 
             $user->update($updateData);
             $updatedUser = $user->fresh();
-
-            Log::info('User profile updated successfully', [
-                'target_user_id' => $user->id,
-                'target_user_email' => $user->email,
-                'updated_by' => $request->user()->id,
-                'updated_by_email' => $request->user()->email,
-                'changes' => array_diff_assoc($updatedUser->only(['name', 'email', 'role']), $originalData),
-                'ip_address' => $request->ip()
-            ]);
 
             return response()->json([
                 'message' => 'User updated successfully',
                 'data' => $updatedUser
             ]);
         } catch (\Exception $e) {
-            Log::error('Error updating user profile', [
-                'requesting_user_id' => $request->user()->id,
-                'target_user_id' => $user->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->except(['password']),
-                'ip_address' => $request->ip()
-            ]);
             
             return response()->json([
                 'message' => 'Failed to update user profile'
@@ -491,14 +373,6 @@ class UserController extends Controller
         try {
             // Only admins can delete users
             if (!$request->user()->isAdmin()) {
-                Log::warning('Non-admin attempt to delete user', [
-                    'requesting_user_id' => $request->user()->id,
-                    'requesting_user_email' => $request->user()->email,
-                    'target_user_id' => $user->id,
-                    'target_user_email' => $user->email,
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent()
-                ]);
                 
                 return response()->json([
                     'message' => 'Only admins can delete users'
@@ -507,11 +381,6 @@ class UserController extends Controller
 
             // Prevent admin from deleting themselves
             if ($user->id === $request->user()->id) {
-                Log::warning('Admin attempt to delete own account', [
-                    'admin_id' => $request->user()->id,
-                    'admin_email' => $request->user()->email,
-                    'ip_address' => $request->ip()
-                ]);
                 
                 return response()->json([
                     'message' => 'Cannot delete your own account'
@@ -523,15 +392,6 @@ class UserController extends Controller
                 $bookingCount = $user->bookings()->count();
                 $eventCount = $user->events()->count();
                 
-                Log::warning('Attempt to delete user with existing data', [
-                    'admin_id' => $request->user()->id,
-                    'admin_email' => $request->user()->email,
-                    'target_user_id' => $user->id,
-                    'target_user_email' => $user->email,
-                    'booking_count' => $bookingCount,
-                    'event_count' => $eventCount,
-                    'ip_address' => $request->ip()
-                ]);
                 
                 return response()->json([
                     'message' => 'Cannot delete user with existing bookings or events'
@@ -541,24 +401,10 @@ class UserController extends Controller
             $userData = $user->only(['id', 'name', 'email', 'role']);
             $user->delete();
 
-            Log::info('User deleted successfully', [
-                'admin_id' => $request->user()->id,
-                'admin_email' => $request->user()->email,
-                'deleted_user' => $userData,
-                'ip_address' => $request->ip()
-            ]);
-
             return response()->json([
                 'message' => 'User deleted successfully'
             ]);
         } catch (\Exception $e) {
-            Log::error('Error deleting user', [
-                'admin_id' => $request->user()->id,
-                'target_user_id' => $user->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'ip_address' => $request->ip()
-            ]);
             
             return response()->json([
                 'message' => 'Failed to delete user'
@@ -609,14 +455,6 @@ class UserController extends Controller
         try {
             // Users can only view their own bookings, admins can view any user's bookings
             if ($user->id !== $request->user()->id && !$request->user()->isAdmin()) {
-                Log::warning('Unauthorized access attempt to view user bookings', [
-                    'requesting_user_id' => $request->user()->id,
-                    'requesting_user_email' => $request->user()->email,
-                    'target_user_id' => $user->id,
-                    'target_user_email' => $user->email,
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent()
-                ]);
                 
                 return response()->json([
                     'message' => 'Unauthorized to view this user\'s bookings'
@@ -628,27 +466,10 @@ class UserController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->paginate($request->get('per_page', 15));
 
-            Log::info('User bookings viewed', [
-                'viewer_id' => $request->user()->id,
-                'viewer_email' => $request->user()->email,
-                'target_user_id' => $user->id,
-                'target_user_email' => $user->email,
-                'total_bookings' => $bookings->total(),
-                'is_admin_view' => $request->user()->isAdmin(),
-                'ip_address' => $request->ip()
-            ]);
-
             return response()->json([
                 'data' => $bookings
             ]);
         } catch (\Exception $e) {
-            Log::error('Error viewing user bookings', [
-                'requesting_user_id' => $request->user()->id,
-                'target_user_id' => $user->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'ip_address' => $request->ip()
-            ]);
             
             return response()->json([
                 'message' => 'Failed to view user bookings'
@@ -706,14 +527,6 @@ class UserController extends Controller
         try {
             // Only admins can view user's events
             if (!$request->user()->isAdmin()) {
-                Log::warning('Non-admin attempt to view user events', [
-                    'requesting_user_id' => $request->user()->id,
-                    'requesting_user_email' => $request->user()->email,
-                    'target_user_id' => $user->id,
-                    'target_user_email' => $user->email,
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent()
-                ]);
                 
                 return response()->json([
                     'message' => 'Only admins can view user\'s events'
@@ -725,26 +538,10 @@ class UserController extends Controller
                 ->orderBy('date', 'desc')
                 ->paginate($request->get('per_page', 15));
 
-            Log::info('User events viewed by admin', [
-                'admin_id' => $request->user()->id,
-                'admin_email' => $request->user()->email,
-                'target_user_id' => $user->id,
-                'target_user_email' => $user->email,
-                'total_events' => $events->total(),
-                'ip_address' => $request->ip()
-            ]);
-
             return response()->json([
                 'data' => $events
             ]);
         } catch (\Exception $e) {
-            Log::error('Error viewing user events', [
-                'admin_id' => $request->user()->id,
-                'target_user_id' => $user->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'ip_address' => $request->ip()
-            ]);
             
             return response()->json([
                 'message' => 'Failed to view user events'
@@ -780,14 +577,6 @@ class UserController extends Controller
         try {
             // Only admins can view user statistics
             if (!$request->user()->isAdmin()) {
-                Log::warning('Non-admin attempt to view user statistics', [
-                    'requesting_user_id' => $request->user()->id,
-                    'requesting_user_email' => $request->user()->email,
-                    'target_user_id' => $user->id,
-                    'target_user_email' => $user->email,
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent()
-                ]);
                 
                 return response()->json([
                     'message' => 'Only admins can view user statistics'
@@ -808,26 +597,10 @@ class UserController extends Controller
                     })->count(),
             ];
 
-            Log::info('User statistics viewed by admin', [
-                'admin_id' => $request->user()->id,
-                'admin_email' => $request->user()->email,
-                'target_user_id' => $user->id,
-                'target_user_email' => $user->email,
-                'statistics' => $statistics,
-                'ip_address' => $request->ip()
-            ]);
-
             return response()->json([
                 'data' => $statistics
             ]);
         } catch (\Exception $e) {
-            Log::error('Error viewing user statistics', [
-                'admin_id' => $request->user()->id,
-                'target_user_id' => $user->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'ip_address' => $request->ip()
-            ]);
             
             return response()->json([
                 'message' => 'Failed to view user statistics'
@@ -871,12 +644,6 @@ class UserController extends Controller
 
             // Verify current password
             if (!Hash::check($request->current_password, $user->password)) {
-                Log::warning('Password change failed - incorrect current password', [
-                    'user_id' => $user->id,
-                    'user_email' => $user->email,
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent()
-                ]);
                 
                 return response()->json([
                     'message' => 'Current password is incorrect'
@@ -888,24 +655,10 @@ class UserController extends Controller
                 'password' => Hash::make($request->new_password)
             ]);
 
-            Log::info('User password changed successfully', [
-                'user_id' => $user->id,
-                'user_email' => $user->email,
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent()
-            ]);
-
             return response()->json([
                 'message' => 'Password changed successfully'
             ]);
         } catch (\Exception $e) {
-            Log::error('Error changing user password', [
-                'user_id' => $request->user()->id,
-                'user_email' => $request->user()->email,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'ip_address' => $request->ip()
-            ]);
             
             return response()->json([
                 'message' => 'Failed to change password'
@@ -952,27 +705,10 @@ class UserController extends Controller
         try {
             $user = $request->user()->load(['bookings.event', 'events']);
 
-            Log::info('User profile accessed', [
-                'user_id' => $user->id,
-                'user_email' => $user->email,
-                'user_role' => $user->role,
-                'booking_count' => $user->bookings->count(),
-                'event_count' => $user->events->count(),
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent()
-            ]);
-
             return response()->json([
                 'data' => $user
             ]);
         } catch (\Exception $e) {
-            Log::error('Error accessing user profile', [
-                'user_id' => $request->user()->id,
-                'user_email' => $request->user()->email,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'ip_address' => $request->ip()
-            ]);
             
             return response()->json([
                 'message' => 'Failed to load user profile'

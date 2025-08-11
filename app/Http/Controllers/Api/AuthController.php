@@ -7,7 +7,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
+use App\Mail\UserRegistrationMail;
 
 class AuthController extends Controller
 {
@@ -29,6 +31,14 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role ?? 'client', // Default to client
         ]);
+
+        // Send welcome email to the new user
+        try {
+            Mail::to($user->email)->send(new UserRegistrationMail($user));
+        } catch (\Exception $e) {
+            // Email failed but registration was successful
+            // Log the error if needed
+        }
 
         // Delete any existing tokens for this user
         $user->tokens()->delete();
