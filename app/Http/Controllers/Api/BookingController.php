@@ -526,8 +526,8 @@ class BookingController extends Controller
                     $adminEmail = env('MAIL_TO_ADMIN', 'admin@pearlsevents.com');
                     Mail::to($adminEmail)->send(new AdminBookingNotification($bookingForEmail));
                     //mail to admin project owner
-                    $adminEmail = env('MAIL_TO_PROJECT_OWNER');
-                    Mail::to($adminEmail)->send(new AdminBookingNotification($bookingForEmail, 'project_owner'));
+                    $projectOwner = env('MAIL_TO_PROJECT_OWNER');
+                    Mail::to($adminEmail)->send(new AdminBookingNotification($projectOwner));
                 } catch (\Exception $e) {
                     // Admin notification failed but booking was successful
                 }
