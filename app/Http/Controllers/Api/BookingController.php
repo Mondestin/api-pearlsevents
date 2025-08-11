@@ -527,7 +527,7 @@ class BookingController extends Controller
                     Mail::to($adminEmail)->send(new AdminBookingNotification($bookingForEmail));
                     //mail to admin project owner
                     $projectOwner = env('MAIL_TO_PROJECT_OWNER');
-                    Mail::to($adminEmail)->send(new AdminBookingNotification($projectOwner));
+                    Mail::to($projectOwner)->send(new AdminBookingNotification($bookingForEmail));
                 } catch (\Exception $e) {
                     // Admin notification failed but booking was successful
                 }
