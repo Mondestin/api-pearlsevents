@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail; // For sending booking emails
 use App\Mail\BookingCreated; // Booking creation email mailable
+use App\Mail\AdminBookingNotification; // Admin booking notification mailable
+use Illuminate\Validation\ValidationException; // Added for ValidationException
+use App\Models\User; // Added for User model
+use Illuminate\Support\Str; // Added for Str::random()
 
 class BookingController extends Controller
 {
@@ -440,4 +444,131 @@ class BookingController extends Controller
             'data' => $statistics
         ]);
     }
+
+
+    /**
+     * Post a booking online for an event
+     * This is a public endpoint to allow users to book an event online 
+     */
+    public function eventBookkingOnline(Request $request): JsonResponse
+    {
+        try {
+            // Get the request data for online booking
+            $eventId = $request->input('event_id');
+            $ticketId = $request->input('ticket_id');
+            $quantity = $request->input('quantity');
+            $userInfo = $request->input('userInfo');
+
+            // Check if the ticket belongs to the specified event
+            $ticket = Ticket::where('id', $ticketId)
+                ->where('event_id', $eventId)
+                ->first();
+
+            if (!$ticket) {
+                return response()->json([
+                    'message' => 'Invalid ticket for this event'
+                ], 400);
+            }
+
+            // Check if enough tickets are available
+            if ($ticket->available_tickets < $quantity) {
+                return response()->json([
+                    'message' => 'Not enough tickets available',
+                    'available' => $ticket->available_tickets,
+                    'requested' => $quantity
+                ], 400);
+            }
+
+            // Check if the event is still open for booking
+            $event = Event::find($eventId);
+            if (!$event) {
+                return response()->json([
+                    'message' => 'Event not found'
+                ], 404);
+            }
+
+            // Create or find user
+            $user = User::firstOrCreate(
+                ['email' => $userInfo['email']],
+                [
+                    'name' => $userInfo['name'],
+                    'password' => bcrypt(Str::random(10)), // Generate random password for user
+                    'role' => $userInfo['role'] ?? 'client',
+                ]
+            );
+
+            // Create booking within a transaction
+            DB::beginTransaction();
+            try {
+                $booking = Booking::create([
+                    'user_id' => $user->id,
+                    'event_id' => $eventId,
+                    'ticket_id' => $ticketId,
+                    'quantity' => $quantity,
+                ]);
+
+                // Update ticket availability
+                $ticket->decrement('quantity', $quantity);
+
+                DB::commit();
+
+                // Send confirmation email to the user
+                try {
+                    $bookingForEmail = $booking->fresh()->load(['event', 'ticket', 'user']);
+                    Mail::to($userInfo['email'])
+                        ->send(new BookingCreated($bookingForEmail));
+                } catch (\Exception $e) {
+                    // Email failed but booking was successful
+                }
+
+                // Send admin notification email
+                try {
+                    $adminEmail = env('MAIL_TO_ADMIN', 'admin@pearlsevents.com');
+                    Mail::to($adminEmail)->send(new AdminBookingNotification($bookingForEmail));
+                } catch (\Exception $e) {
+                    // Admin notification failed but booking was successful
+                }
+
+                // Return success response with booking details
+                return response()->json([
+                    'message' => 'Event booked successfully! Check your email for confirmation.',
+                    'data' => [
+                        'booking_id' => $booking->id,
+                        'booking_reference' => 'BK-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT),
+                        'event' => [
+                            'name' => $event->name,
+                            'date' => $event->date,
+                            'location' => $event->location
+                        ],
+                        'ticket' => [
+                            'type' => $ticket->type,
+                            'price' => $ticket->price
+                        ],
+                        'quantity' => $quantity,
+                        'total_price' => $booking->total_price,
+                        'user_info' => [
+                            'name' => $userInfo['name'],
+                            'email' => $userInfo['email'],
+                            'phone' => $userInfo['phone'],
+                            'role' => $userInfo['role'] ?? 'client'
+                        ],
+                        'booking_date' => $booking->created_at,
+                        'status' => 'confirmed'
+                    ]
+                ], 201);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                
+                return response()->json([
+                    'message' => 'Failed to create booking. Please try again.'
+                ], 500);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while processing your booking. Please try again.'
+            ], 500);
+        }
+    }   
 } 

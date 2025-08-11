@@ -25,6 +25,9 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 // Contact us (public)
 Route::post('/contact-us', [ContactController::class, 'sendMailtoAdmin']);
+// Bookings (public)
+Route::post('event/booking', [BookingController::class, 'eventBookkingOnline']);
+
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -62,6 +65,8 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('/booking/{bookingId}', [BookingController::class, 'eventBookings']);
+
+
 
 // Health check
 Route::get('/health', function () {
