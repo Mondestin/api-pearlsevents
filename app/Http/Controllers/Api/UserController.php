@@ -89,7 +89,7 @@ class UserController extends Controller
         } catch (\Exception $e) {
             
             return response()->json([
-                'message' => 'Failed to create user'
+                'message' => $e->getMessage()
             ], 500);
         }
     }
