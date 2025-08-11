@@ -15,20 +15,20 @@ Nous sommes ravis de vous accueillir dans notre communauté d'événements excep
 ## 🎯 Votre Compte a Été Créé avec Succès
 
 <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin: 20px 0;">
-    <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-            <td style="padding: 10px 0; font-weight: 600; color: #495057; width: 35%;">Nom d'utilisateur :</td>
-            <td style="padding: 10px 0; color: #6c757d;"><strong>{{ $user->email }}</strong></td>
-        </tr>
-        <tr>
-            <td style="padding: 10px 0; font-weight: 600; color: #495057;">Mot de passe :</td>
-            <td style="padding: 10px 0; color: #6c757d;"><code style="background: #e9ecef; padding: 4px 8px; border-radius: 6px;">{{ $password }}</code></td>
-        </tr>
-        <tr>
-            <td style="padding: 10px 0; font-weight: 600; color: #495057;">Date d'inscription :</td>
-            <td style="padding: 10px 0; color: #6c757d;">{{ $user->created_at->format('d/m/Y à H:i') }}</td>
-        </tr>
-    </table>
+    <div style="margin-bottom: 15px;">
+        <div style="font-weight: 600; color: #495057; margin-bottom: 5px;">Nom d'utilisateur :</div>
+        <div style="color: #6c757d;"><strong>{{ $user->email }}</strong></div>
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <div style="font-weight: 600; color: #495057; margin-bottom: 5px;">Mot de passe :</div>
+        <div style="color: #6c757d;"><code style="background: #e9ecef; padding: 4px 8px; border-radius: 6px;">{{ $password }}</code></div>
+    </div>
+    
+    <div style="margin-bottom: 15px;">
+        <div style="font-weight: 600; color: #495057; margin-bottom: 5px;">Date d'inscription :</div>
+        <div style="color: #6c757d;">{{ $user->created_at->format('d/m/Y à H:i') }}</div>
+    </div>
 </div>
 
 ## 🚀 Que Pouvez-Vous Faire Maintenant ?
